@@ -3,7 +3,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import { transformResume } from "./geminiService";
 import ProfileCard from "./components/ProfileCard";
 import { ConsultantProfile, UploadedAsset } from "./types";
-import { exportProfileToPdfFromView, exportProfileToWordFromView } from "./wordService";
+import { exportProfileToEditableWord, exportProfileToPdfFromView } from "./wordService";
 import ThemeStudioPanel from "./themeStudio/ThemeStudioPanel";
 import { DEFAULT_THEME, ResumeTheme } from "./themeStudio/themeTypes";
 
@@ -158,7 +158,7 @@ const App: React.FC = () => {
     setError(null);
     setIsExporting("word");
     try {
-      await exportProfileToWordFromView("profile-card", profile.name);
+      await exportProfileToEditableWord(profile, theme);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to export Word file.";
       setError(message);
