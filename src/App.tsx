@@ -3,7 +3,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import { transformResume } from "./geminiService";
 import ProfileCard from "./components/ProfileCard";
 import { ConsultantProfile, UploadedAsset } from "./types";
-import { exportProfileToWord } from "./wordService";
+import { exportProfileToPdfFromView, exportProfileToWordFromView } from "./wordService";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://esm.sh/pdfjs-dist@4.10.38/build/pdf.worker.mjs";
 
@@ -44,6 +44,7 @@ const App: React.FC = () => {
   const [sourceImages, setSourceImages] = useState<string[] | null>(null);
   const [profile, setProfile] = useState<ConsultantProfile | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isExporting, setIsExporting] = useState<"pdf" | "word" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -121,6 +122,34 @@ const App: React.FC = () => {
     }
   };
 
+  const onDownloadPdf = async () => {
+    if (!profile) return;
+    setError(null);
+    setIsExporting("pdf");
+    try {
+      await exportProfileToPdfFromView("profile-card", profile.name);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to export PDF.";
+      setError(message);
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
+  const onDownloadWord = async () => {
+    if (!profile) return;
+    setError(null);
+    setIsExporting("word");
+    try {
+      await exportProfileToWordFromView("profile-card", profile.name);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to export Word file.";
+      setError(message);
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
   const clearFile = () => {
     setUploadedFiles(null);
     setSourceImages(null);
@@ -139,8 +168,8 @@ const App: React.FC = () => {
           <p className="tagline">Transform unstructured resumes into polished consultant profiles in seconds.</p>
           <div className="meta-pills">
             <span>AI Extraction</span>
-            <span>Word Export</span>
-            <span>Print Ready</span>
+            <span>PDF Download</span>
+            <span>Word Download</span>
           </div>
         </div>
 
@@ -181,11 +210,14 @@ const App: React.FC = () => {
 
         {profile ? (
           <div className="card actions elevated">
-            <button className="button button-secondary" type="button" onClick={() => window.print()}>
-              Print Profile
+            <button className="button button-secondary" type="button" onClick={onDownloadPdf} disabled={Boolean(isExporting)}>
+              {isExporting === "pdf" ? "Preparing PDF..." : "Download PDF"}
             </button>
-            <button className="button button-secondary" type="button" onClick={() => exportProfileToWord(profile)}>
-              Export Word
+            <button className="button button-secondary" type="button" onClick={onDownloadWord} disabled={Boolean(isExporting)}>
+              {isExporting === "word" ? "Preparing Word..." : "Download Word"}
+            </button>
+            <button className="button button-secondary" type="button" onClick={() => window.print()} disabled={Boolean(isExporting)}>
+              Print Profile
             </button>
           </div>
         ) : null}

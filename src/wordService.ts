@@ -1,121 +1,115 @@
-﻿import {
-  AlignmentType,
-  BorderStyle,
-  Document,
-  Packer,
-  Paragraph,
-  Table,
-  TableCell,
-  TableRow,
-  TextRun,
-  WidthType
-} from "docx";
-import { ConsultantProfile } from "./types";
+﻿import { Document, ImageRun, Packer, Paragraph } from "docx";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
-export async function exportProfileToWord(profile: ConsultantProfile): Promise<void> {
-  const sectionHeader = (text: string) =>
-    new Paragraph({
-      children: [new TextRun({ text, bold: true, size: 24, color: "0F172A" })],
-      border: { bottom: { style: BorderStyle.SINGLE, color: "CBD5E1", size: 4 } },
-      spacing: { before: 280, after: 120 }
-    });
+function sanitizeFileName(input: string): string {
+  return input.replace(/[^a-z0-9-\s_]/gi, "").trim().replace(/\s+/g, "-").toLowerCase() || "consultant-profile";
+}
 
-  const list = (items: string[]) =>
-    items.map(
-      (item) =>
-        new Paragraph({
-          text: `- ${item}`,
-          spacing: { before: 80 }
+async function captureElement(elementId: string): Promise<HTMLCanvasElement> {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    throw new Error("Profile preview not found.");
+  }
+
+  return html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff"
+  });
+}
+
+function dataUrlToBytes(dataUrl: string): Uint8Array {
+  const base64 = dataUrl.split(",")[1] || "";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function splitCanvas(canvas: HTMLCanvasElement, sliceHeight: number): HTMLCanvasElement[] {
+  const pages: HTMLCanvasElement[] = [];
+  let offsetY = 0;
+
+  while (offsetY < canvas.height) {
+    const remaining = canvas.height - offsetY;
+    const currentHeight = Math.min(sliceHeight, remaining);
+    const temp = document.createElement("canvas");
+    temp.width = canvas.width;
+    temp.height = currentHeight;
+    const ctx = temp.getContext("2d");
+    if (!ctx) break;
+
+    ctx.drawImage(canvas, 0, offsetY, canvas.width, currentHeight, 0, 0, canvas.width, currentHeight);
+    pages.push(temp);
+    offsetY += currentHeight;
+  }
+
+  return pages;
+}
+
+export async function exportProfileToPdfFromView(elementId: string, profileName: string): Promise<void> {
+  const canvas = await captureElement(elementId);
+  const image = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const margin = 10;
+  const renderWidth = pageWidth - margin * 2;
+  const renderHeight = (canvas.height * renderWidth) / canvas.width;
+
+  let yOffset = 0;
+  pdf.addImage(image, "PNG", margin, margin + yOffset, renderWidth, renderHeight);
+
+  while (margin + yOffset + renderHeight > pageHeight) {
+    yOffset -= pageHeight - margin * 2;
+    pdf.addPage();
+    pdf.addImage(image, "PNG", margin, margin + yOffset, renderWidth, renderHeight);
+  }
+
+  pdf.save(`${sanitizeFileName(profileName)}.pdf`);
+}
+
+export async function exportProfileToWordFromView(elementId: string, profileName: string): Promise<void> {
+  const canvas = await captureElement(elementId);
+  const maxPagePixelHeight = Math.floor(canvas.width * 1.35);
+  const pageCanvases = splitCanvas(canvas, maxPagePixelHeight);
+
+  const children = pageCanvases.map((slice) => {
+    const dataUrl = slice.toDataURL("image/png");
+    const bytes = dataUrlToBytes(dataUrl);
+    const width = 560;
+    const height = Math.round((slice.height / slice.width) * width);
+
+    return new Paragraph({
+      children: [
+        new ImageRun({
+          data: bytes,
+          type: "png",
+          transformation: { width, height }
         })
-    );
+      ],
+      spacing: { after: 120 }
+    });
+  });
 
-  const projectRows = profile.projects.map(
-    (project) =>
-      new TableRow({
-        children: [
-          new TableCell({ children: [new Paragraph(project.client)] }),
-          new TableCell({ children: [new Paragraph(project.domain)] }),
-          new TableCell({ children: [new Paragraph(project.role)] }),
-          new TableCell({ children: [new Paragraph(project.duration)] })
-        ]
-      })
-  );
-
-  const document = new Document({
+  const doc = new Document({
     sections: [
       {
         properties: {},
-        children: [
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: "Consultant Profile", bold: true, size: 36, color: "1D4ED8" })],
-            spacing: { after: 220 }
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({ text: profile.name, bold: true, size: 30 }),
-              new TextRun({ text: `\n${profile.title}`, size: 24, color: "334155" })
-            ]
-          }),
-          sectionHeader("Professional Summary"),
-          new Paragraph(profile.summary),
-
-          sectionHeader("Core Expertise"),
-          ...list(profile.expertise),
-
-          sectionHeader("Technical Skills"),
-          new Paragraph(`Primary: ${profile.skills.primary.join(", ")}`),
-          new Paragraph(`Secondary: ${profile.skills.secondary.join(", ")}`),
-          new Paragraph(`Tools: ${profile.skills.tools.join(", ")}`),
-
-          sectionHeader("Professional Experience"),
-          ...list(profile.experience),
-
-          sectionHeader("Key Projects"),
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: [
-              new TableRow({
-                children: ["Client", "Domain", "Role", "Duration"].map(
-                  (h) =>
-                    new TableCell({
-                      children: [new Paragraph({ children: [new TextRun({ text: h, bold: true })] })]
-                    })
-                )
-              }),
-              ...projectRows
-            ]
-          }),
-
-          sectionHeader("Certifications"),
-          ...list(profile.certifications),
-
-          sectionHeader("Languages"),
-          ...list(profile.languages),
-
-          ...(profile.awards.length
-            ? [sectionHeader("Awards"), ...list(profile.awards)]
-            : []),
-
-          sectionHeader("Education"),
-          ...profile.education.map(
-            (item) => new Paragraph(`${item.degree} | ${item.institution} (${item.year})`)
-          ),
-
-          ...profile.customSections.flatMap((section) => [
-            sectionHeader(section.title),
-            new Paragraph(section.content)
-          ])
-        ]
+        children
       }
     ]
   });
 
-  const blob = await Packer.toBlob(document);
+  const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);
-  const a = window.document.createElement("a");
+  const a = document.createElement("a");
   a.href = url;
-  a.download = `consultant-profile-${profile.name.replace(/\s+/g, "-").toLowerCase()}.docx`;
+  a.download = `${sanitizeFileName(profileName)}.docx`;
   a.click();
   URL.revokeObjectURL(url);
 }
