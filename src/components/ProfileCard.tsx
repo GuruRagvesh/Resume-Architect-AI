@@ -43,6 +43,7 @@ const CroppedPreview: React.FC<CroppedPreviewProps> = ({ images, box, pageIndex,
 interface ProfileCardProps {
   profile: ConsultantProfile;
   sourceImages: string[] | null;
+  logoUrl: string | null;
 }
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
@@ -52,9 +53,15 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
   </section>
 );
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ profile, sourceImages }) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({ profile, sourceImages, logoUrl }) => {
   return (
-    <article className="profile-card" id="profile-card">
+    <article className={`profile-card ${logoUrl ? "with-logo" : ""}`} id="profile-card">
+      {logoUrl ? (
+        <div className="profile-logo-corner">
+          <img src={logoUrl} alt="Company logo" />
+        </div>
+      ) : null}
+
       <header className="profile-header">
         <CroppedPreview
           images={sourceImages}

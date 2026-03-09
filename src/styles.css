@@ -289,6 +289,27 @@ select:focus-visible,
   font-family: var(--profile-font-ui);
   font-size: var(--profile-base-font);
   color: var(--profile-text);
+  position: relative;
+}
+
+.profile-card.with-logo {
+  padding-top: 86px;
+}
+
+.profile-logo-corner {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  width: 120px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.profile-logo-corner img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .profile-header {

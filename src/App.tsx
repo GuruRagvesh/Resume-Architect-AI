@@ -3,7 +3,6 @@ import * as pdfjsLib from "pdfjs-dist";
 import { transformResume } from "./geminiService";
 import ProfileCard from "./components/ProfileCard";
 import { ConsultantProfile, UploadedAsset } from "./types";
-import { exportProfileToEditableWord, exportProfileToPdfFromView } from "./wordService";
 import ThemeStudioPanel from "./themeStudio/ThemeStudioPanel";
 import { DEFAULT_THEME, ResumeTheme } from "./themeStudio/themeTypes";
 
@@ -14,6 +13,15 @@ async function fileToBase64(file: File): Promise<string> {
     const reader = new FileReader();
     reader.onload = () => resolve((reader.result as string).split(",")[1]);
     reader.onerror = () => reject(new Error("Unable to read file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Unable to read image."));
     reader.readAsDataURL(file);
   });
 }
@@ -46,12 +54,13 @@ const App: React.FC = () => {
   const [sourceImages, setSourceImages] = useState<string[] | null>(null);
   const [profile, setProfile] = useState<ConsultantProfile | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isExporting, setIsExporting] = useState<"pdf" | "word" | null>(null);
   const [isThemeStudioOpen, setIsThemeStudioOpen] = useState(false);
   const [theme, setTheme] = useState<ResumeTheme>(DEFAULT_THEME);
+  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const canBuild = useMemo(() => Boolean(rawResume.trim()) || Boolean(uploadedFiles?.length), [rawResume, uploadedFiles]);
 
@@ -113,6 +122,29 @@ const App: React.FC = () => {
     }
   };
 
+  const onSelectLogo = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = event.target.files?.[0];
+    if (!selected) return;
+
+    if (!selected.type.startsWith("image/")) {
+      setError("Logo must be an image file (PNG/JPG/SVG).");
+      return;
+    }
+
+    if (selected.size > 2 * 1024 * 1024) {
+      setError("Logo file is too large. Maximum size is 2MB.");
+      return;
+    }
+
+    try {
+      const dataUrl = await fileToDataUrl(selected);
+      setLogoDataUrl(dataUrl);
+      setError(null);
+    } catch {
+      setError("Could not read the logo image.");
+    }
+  };
+
   const onBuild = async () => {
     if (!canBuild) {
       setError("Upload a resume file or paste resume text first.");
@@ -139,38 +171,15 @@ const App: React.FC = () => {
     }
   };
 
-  const onDownloadPdf = async () => {
-    if (!profile) return;
-    setError(null);
-    setIsExporting("pdf");
-    try {
-      await exportProfileToPdfFromView("profile-card", profile.name);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to export PDF.";
-      setError(message);
-    } finally {
-      setIsExporting(null);
-    }
-  };
-
-  const onDownloadWord = async () => {
-    if (!profile) return;
-    setError(null);
-    setIsExporting("word");
-    try {
-      await exportProfileToEditableWord(profile, theme);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to export Word file.";
-      setError(message);
-    } finally {
-      setIsExporting(null);
-    }
-  };
-
   const clearFile = () => {
     setUploadedFiles(null);
     setSourceImages(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const clearLogo = () => {
+    setLogoDataUrl(null);
+    if (logoInputRef.current) logoInputRef.current.value = "";
   };
 
   return (
@@ -185,8 +194,8 @@ const App: React.FC = () => {
           <p className="tagline">Transform unstructured resumes into polished consultant profiles in seconds.</p>
           <div className="meta-pills">
             <span>AI Extraction</span>
-            <span>PDF Download</span>
-            <span>Word Download</span>
+            <span>Theme Studio</span>
+            <span>Logo Support</span>
           </div>
         </div>
 
@@ -225,18 +234,29 @@ const App: React.FC = () => {
           </button>
         </div>
 
+        <div className="card elevated">
+          <h2>Company Logo</h2>
+          <p className="helper">Upload logo to place it in the top-left corner of the profile.</p>
+          <button type="button" onClick={() => logoInputRef.current?.click()} className="button button-upload">
+            Upload Logo
+          </button>
+          <input ref={logoInputRef} type="file" accept="image/*" onChange={onSelectLogo} hidden />
+          {logoDataUrl ? (
+            <div className="inline-row">
+              <span>Logo added</span>
+              <button className="link-button" onClick={clearLogo} type="button">
+                Remove
+              </button>
+            </div>
+          ) : null}
+        </div>
+
         {profile ? (
           <div className="card actions elevated">
-            <button className="button button-secondary" type="button" onClick={() => setIsThemeStudioOpen(true)} disabled={Boolean(isExporting)}>
+            <button className="button button-secondary" type="button" onClick={() => setIsThemeStudioOpen(true)}>
               Open Theme Studio
             </button>
-            <button className="button button-secondary" type="button" onClick={onDownloadPdf} disabled={Boolean(isExporting)}>
-              {isExporting === "pdf" ? "Preparing PDF..." : "Download PDF"}
-            </button>
-            <button className="button button-secondary" type="button" onClick={onDownloadWord} disabled={Boolean(isExporting)}>
-              {isExporting === "word" ? "Preparing Word..." : "Download Word"}
-            </button>
-            <button className="button button-secondary" type="button" onClick={() => window.print()} disabled={Boolean(isExporting)}>
+            <button className="button button-secondary" type="button" onClick={() => window.print()}>
               Print Profile
             </button>
           </div>
@@ -246,7 +266,7 @@ const App: React.FC = () => {
       <main className="main-panel">
         {profile ? (
           <div className="profile-theme-scope" style={profileThemeStyle}>
-            <ProfileCard profile={profile} sourceImages={sourceImages} />
+            <ProfileCard profile={profile} sourceImages={sourceImages} logoUrl={logoDataUrl} />
           </div>
         ) : (
           <div className="empty-state">
