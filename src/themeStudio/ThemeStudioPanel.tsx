@@ -44,11 +44,11 @@ const ThemeStudioPanel: React.FC<Props> = ({ isOpen, theme, onChange, onClose })
     <div className="theme-panel-overlay no-print">
       <aside className="theme-panel">
         <div className="theme-panel-head">
-          <h3>Theme Studio</h3>
+          <h3>Internal Theme Controls</h3>
           <button type="button" className="link-button" onClick={onClose}>Close</button>
         </div>
 
-        <p className="helper">Edit fonts, sizes, and colors. Save reusable company themes and apply instantly.</p>
+        <p className="helper">Configure internal formatting presets. Save reusable TechnoEdge templates and apply instantly.</p>
 
         <label>Body Font</label>
         <select value={theme.fonts.body} onChange={(e) => patchFonts("body", e.target.value)}>
@@ -107,11 +107,11 @@ const ThemeStudioPanel: React.FC<Props> = ({ isOpen, theme, onChange, onClose })
             onChange={(e) => setPresetName(e.target.value)}
             placeholder="Preset name (example: TCS style)"
           />
-          <button type="button" className="button button-primary" onClick={saveCurrent}>Save Current Theme</button>
+          <button type="button" className="button button-primary" onClick={saveCurrent}>Save Internal Template</button>
           <button type="button" className="button button-secondary" onClick={() => onChange(DEFAULT_THEME)}>Reset Default</button>
         </div>
 
-        <h4>Company Presets</h4>
+        <h4>Template Library</h4>
         <div className="preset-list">
           {presets.map((preset) => (
             <div className="preset-item" key={preset.id}>

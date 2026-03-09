@@ -191,7 +191,7 @@ const App: React.FC = () => {
         <div className="brand-block">
           <p className="eyebrow">TechnoEdge</p>
           <h1>TechnoEdge Resume Converter</h1>
-          <p className="tagline">Transform unstructured resumes into polished consultant profiles in seconds.</p>
+          <p className="tagline">Internal profile operations workspace for TechnoEdge consultant standardization.</p>
           <div className="meta-pills">
             <span>AI Extraction</span>
             <span>Theme Studio</span>
@@ -200,11 +200,11 @@ const App: React.FC = () => {
         </div>
 
         <div className="card elevated">
-          <h2>Input Resume</h2>
-          <p className="helper">Upload PDF/JPG/PNG or paste text below.</p>
+          <h2>Resume Intake</h2>
+          <p className="helper">Upload source resume documents or paste intake text.</p>
 
           <button type="button" onClick={() => fileInputRef.current?.click()} className="button button-upload">
-            Upload PDF / Image
+            Upload Source Document
           </button>
 
           <input ref={fileInputRef} type="file" accept=".pdf,image/*" onChange={onSelectFile} hidden />
@@ -218,32 +218,32 @@ const App: React.FC = () => {
             </div>
           ) : null}
 
-          <label htmlFor="raw-resume">Raw resume text</label>
+          <label htmlFor="raw-resume">Intake text</label>
           <textarea
             id="raw-resume"
             value={rawResume}
             onChange={(e) => setRawResume(e.target.value)}
             rows={11}
-            placeholder="Paste full resume text here for text-only conversion"
+            placeholder="Paste source resume text for internal conversion"
           />
 
           {error ? <div className="error-box">{error}</div> : null}
 
           <button className="button button-primary" onClick={onBuild} disabled={!canBuild || isProcessing} type="button">
-            {isProcessing ? "Building profile..." : "Build Profile"}
+            {isProcessing ? "Building profile..." : "Generate Internal Profile"}
           </button>
         </div>
 
         <div className="card elevated">
-          <h2>Company Logo</h2>
-          <p className="helper">Upload logo to place it in the top-left corner of the profile.</p>
+          <h2>Brand Asset</h2>
+          <p className="helper">Upload TechnoEdge or client brand mark for profile header placement.</p>
           <button type="button" onClick={() => logoInputRef.current?.click()} className="button button-upload">
-            Upload Logo
+            Upload Brand Mark
           </button>
           <input ref={logoInputRef} type="file" accept="image/*" onChange={onSelectLogo} hidden />
           {logoDataUrl ? (
             <div className="inline-row">
-              <span>Logo added</span>
+              <span>Brand mark attached</span>
               <button className="link-button" onClick={clearLogo} type="button">
                 Remove
               </button>
@@ -254,10 +254,10 @@ const App: React.FC = () => {
         {profile ? (
           <div className="card actions elevated">
             <button className="button button-secondary" type="button" onClick={() => setIsThemeStudioOpen(true)}>
-              Open Theme Studio
+              Open Internal Theme Controls
             </button>
             <button className="button button-secondary" type="button" onClick={() => window.print()}>
-              Print Profile
+              Print Internal Profile
             </button>
           </div>
         ) : null}
@@ -270,9 +270,9 @@ const App: React.FC = () => {
           </div>
         ) : (
           <div className="empty-state">
-            <p className="eyebrow">Preview</p>
-            <h2>Profile canvas is ready</h2>
-            <p>Upload a resume and click Build Profile to generate the consultant-ready layout.</p>
+            <p className="eyebrow">Internal Preview</p>
+            <h2>Profile workspace ready</h2>
+            <p>Upload a resume and click Generate Internal Profile to generate the consultant-ready layout.</p>
           </div>
         )}
       </main>
