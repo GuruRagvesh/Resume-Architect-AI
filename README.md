@@ -1,4 +1,4 @@
-﻿# Resume Conversion AI Demo (Public)
+﻿# TechnoEdge Resume Converter (Public)
 
 This is a clean, public-facing demo project you can publish on GitHub without exposing your internal codebase.
 

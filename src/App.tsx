@@ -189,8 +189,8 @@ const App: React.FC = () => {
 
       <aside className="sidebar no-print">
         <div className="brand-block">
-          <p className="eyebrow">Client Demo Tool</p>
-          <h1>Resume Architect Studio</h1>
+          <p className="eyebrow">TechnoEdge</p>
+          <h1>TechnoEdge Resume Converter</h1>
           <p className="tagline">Transform unstructured resumes into polished consultant profiles in seconds.</p>
           <div className="meta-pills">
             <span>AI Extraction</span>
