@@ -64,8 +64,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, sourceImages }) => {
           className="profile-photo"
         />
         <div>
+          <p className="profile-overline">Consultant Profile</p>
           <h1>{profile.name}</h1>
-          <p>{profile.title}</p>
+          <p className="profile-title">{profile.title}</p>
         </div>
       </header>
 

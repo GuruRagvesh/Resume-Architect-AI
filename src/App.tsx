@@ -129,16 +129,31 @@ const App: React.FC = () => {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar no-print">
-        <h1>Resume Conversion AI Demo</h1>
-        <p className="tagline">Upload resumes and generate client-ready consultant profiles.</p>
+      <div className="background-orb orb-a" />
+      <div className="background-orb orb-b" />
 
-        <div className="card">
+      <aside className="sidebar no-print">
+        <div className="brand-block">
+          <p className="eyebrow">Client Demo Tool</p>
+          <h1>Resume Architect Studio</h1>
+          <p className="tagline">Transform unstructured resumes into polished consultant profiles in seconds.</p>
+          <div className="meta-pills">
+            <span>AI Extraction</span>
+            <span>Word Export</span>
+            <span>Print Ready</span>
+          </div>
+        </div>
+
+        <div className="card elevated">
           <h2>Input Resume</h2>
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="button button-secondary">
+          <p className="helper">Upload PDF/JPG/PNG or paste text below.</p>
+
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="button button-upload">
             Upload PDF / Image
           </button>
+
           <input ref={fileInputRef} type="file" accept=".pdf,image/*" onChange={onSelectFile} hidden />
+
           {uploadedFiles ? (
             <div className="inline-row">
               <span>{uploadedFiles[0].name}</span>
@@ -148,7 +163,7 @@ const App: React.FC = () => {
             </div>
           ) : null}
 
-          <label htmlFor="raw-resume">Or paste raw resume text</label>
+          <label htmlFor="raw-resume">Raw resume text</label>
           <textarea
             id="raw-resume"
             value={rawResume}
@@ -159,15 +174,15 @@ const App: React.FC = () => {
 
           {error ? <div className="error-box">{error}</div> : null}
 
-          <button className="button" onClick={onBuild} disabled={!canBuild || isProcessing} type="button">
-            {isProcessing ? "Processing..." : "Build Profile"}
+          <button className="button button-primary" onClick={onBuild} disabled={!canBuild || isProcessing} type="button">
+            {isProcessing ? "Building profile..." : "Build Profile"}
           </button>
         </div>
 
         {profile ? (
-          <div className="card actions">
+          <div className="card actions elevated">
             <button className="button button-secondary" type="button" onClick={() => window.print()}>
-              Print
+              Print Profile
             </button>
             <button className="button button-secondary" type="button" onClick={() => exportProfileToWord(profile)}>
               Export Word
@@ -181,8 +196,9 @@ const App: React.FC = () => {
           <ProfileCard profile={profile} sourceImages={sourceImages} />
         ) : (
           <div className="empty-state">
-            <h2>Profile preview appears here</h2>
-            <p>Upload a resume and click Build Profile to start the demo.</p>
+            <p className="eyebrow">Preview</p>
+            <h2>Profile canvas is ready</h2>
+            <p>Upload a resume and click Build Profile to generate the consultant-ready layout.</p>
           </div>
         )}
       </main>
