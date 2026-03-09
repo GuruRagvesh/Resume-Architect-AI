@@ -4,6 +4,8 @@ import { transformResume } from "./geminiService";
 import ProfileCard from "./components/ProfileCard";
 import { ConsultantProfile, UploadedAsset } from "./types";
 import { exportProfileToPdfFromView, exportProfileToWordFromView } from "./wordService";
+import ThemeStudioPanel from "./themeStudio/ThemeStudioPanel";
+import { DEFAULT_THEME, ResumeTheme } from "./themeStudio/themeTypes";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://esm.sh/pdfjs-dist@4.10.38/build/pdf.worker.mjs";
 
@@ -45,11 +47,26 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<ConsultantProfile | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isExporting, setIsExporting] = useState<"pdf" | "word" | null>(null);
+  const [isThemeStudioOpen, setIsThemeStudioOpen] = useState(false);
+  const [theme, setTheme] = useState<ResumeTheme>(DEFAULT_THEME);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canBuild = useMemo(() => Boolean(rawResume.trim()) || Boolean(uploadedFiles?.length), [rawResume, uploadedFiles]);
+
+  const profileThemeStyle = {
+    "--profile-font-ui": `"${theme.fonts.body}", sans-serif`,
+    "--profile-font-display": `"${theme.fonts.display}", serif`,
+    "--profile-base-font": `${theme.baseFontSize}px`,
+    "--profile-primary": theme.primaryColor,
+    "--profile-text": theme.textColor,
+    "--profile-muted": theme.mutedColor,
+    "--profile-paper": theme.paperColor,
+    "--profile-border": theme.borderColor,
+    "--profile-chip-bg": theme.chipBackground,
+    "--profile-chip-text": theme.chipText
+  } as React.CSSProperties;
 
   const onSelectFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0];
@@ -210,6 +227,9 @@ const App: React.FC = () => {
 
         {profile ? (
           <div className="card actions elevated">
+            <button className="button button-secondary" type="button" onClick={() => setIsThemeStudioOpen(true)} disabled={Boolean(isExporting)}>
+              Open Theme Studio
+            </button>
             <button className="button button-secondary" type="button" onClick={onDownloadPdf} disabled={Boolean(isExporting)}>
               {isExporting === "pdf" ? "Preparing PDF..." : "Download PDF"}
             </button>
@@ -225,7 +245,9 @@ const App: React.FC = () => {
 
       <main className="main-panel">
         {profile ? (
-          <ProfileCard profile={profile} sourceImages={sourceImages} />
+          <div className="profile-theme-scope" style={profileThemeStyle}>
+            <ProfileCard profile={profile} sourceImages={sourceImages} />
+          </div>
         ) : (
           <div className="empty-state">
             <p className="eyebrow">Preview</p>
@@ -234,6 +256,13 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
+
+      <ThemeStudioPanel
+        isOpen={isThemeStudioOpen}
+        theme={theme}
+        onChange={setTheme}
+        onClose={() => setIsThemeStudioOpen(false)}
+      />
     </div>
   );
 };

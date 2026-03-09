@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;600;700;800&family=Lora:wght@400;600;700&family=Manrope:wght@400;500;600;700;800&family=Merriweather:wght@400;700&family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap");
 
 :root {
   color-scheme: light;
@@ -11,7 +11,6 @@
   --line: #ddd6c9;
   --brand: #0f766e;
   --brand-dark: #115e59;
-  --accent: #f59e0b;
   --danger: #b42318;
   --shadow: 0 20px 50px rgba(22, 24, 29, 0.08);
 }
@@ -149,18 +148,26 @@ label {
   font-weight: 600;
 }
 
+input,
+select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 11px;
-  resize: vertical;
-  font-family: "IBM Plex Mono", Consolas, monospace;
-  font-size: 0.84rem;
+  font-family: var(--font-ui);
   background: #fffefb;
 }
 
+textarea {
+  resize: vertical;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.84rem;
+}
+
 textarea:focus-visible,
+input:focus-visible,
+select:focus-visible,
 .button:focus-visible,
 .link-button:focus-visible {
   outline: 2px solid #5eead4;
@@ -257,15 +264,31 @@ textarea:focus-visible,
   color: #252a32;
 }
 
+.profile-theme-scope {
+  --profile-font-ui: "Manrope", sans-serif;
+  --profile-font-display: "Fraunces", serif;
+  --profile-base-font: 16px;
+  --profile-primary: #0f766e;
+  --profile-text: #232a34;
+  --profile-muted: #4e5664;
+  --profile-paper: #fefcf7;
+  --profile-border: #d5ccbb;
+  --profile-chip-bg: #ebfbf7;
+  --profile-chip-text: #0f766e;
+}
+
 .profile-card {
-  background: linear-gradient(180deg, #fffdfa 0%, #fefcf7 100%);
-  border: 1px solid #d5ccbb;
+  background: var(--profile-paper);
+  border: 1px solid var(--profile-border);
   border-radius: 24px;
   max-width: 980px;
   margin: 0 auto;
   padding: 32px;
   box-shadow: var(--shadow);
   animation: fadeUp 300ms ease;
+  font-family: var(--profile-font-ui);
+  font-size: var(--profile-base-font);
+  color: var(--profile-text);
 }
 
 .profile-header {
@@ -275,32 +298,33 @@ textarea:focus-visible,
   align-items: center;
   margin-bottom: 22px;
   padding-bottom: 18px;
-  border-bottom: 1px solid #ddd3c2;
+  border-bottom: 1px solid var(--profile-border);
 }
 
 .profile-overline {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.13em;
-  color: #7a7d87;
+  color: var(--profile-muted);
   font-size: 0.68rem;
   font-weight: 800;
 }
 
 .profile-header h1 {
   margin: 4px 0;
-  font-family: var(--font-display);
+  font-family: var(--profile-font-display);
   font-size: 2rem;
+  color: var(--profile-primary);
 }
 
 .profile-title {
   margin: 0;
-  color: #4e5664;
+  color: var(--profile-muted);
   font-weight: 700;
 }
 
 .crop-wrap {
-  border: 1px solid #d7cdbd;
+  border: 1px solid var(--profile-border);
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -318,11 +342,11 @@ textarea:focus-visible,
 }
 
 .crop-fallback {
-  border: 1px dashed #ccc2b3;
+  border: 1px dashed var(--profile-border);
   border-radius: 10px;
   display: grid;
   place-items: center;
-  color: #737986;
+  color: var(--profile-muted);
   font-size: 0.75rem;
   background: #fffcf6;
 }
@@ -349,7 +373,7 @@ textarea:focus-visible,
   display: block;
   margin-top: 5px;
   font-size: 0.64rem;
-  color: #656c79;
+  color: var(--profile-muted);
   font-weight: 700;
 }
 
@@ -358,17 +382,17 @@ textarea:focus-visible,
 }
 
 .section h3 {
-  font-family: var(--font-display);
-  border-bottom: 1px solid #d6cebf;
+  font-family: var(--profile-font-display);
+  border-bottom: 1px solid var(--profile-border);
   padding-bottom: 5px;
   margin-bottom: 8px;
-  color: #13202a;
+  color: var(--profile-primary);
 }
 
 .section p,
 .section li {
   line-height: 1.52;
-  color: #232a34;
+  color: var(--profile-text);
 }
 
 .section ul {
@@ -382,9 +406,9 @@ textarea:focus-visible,
 }
 
 .chip {
-  border: 1px solid #b9ddd8;
-  background: #ebfbf7;
-  color: #0f766e;
+  border: 1px solid var(--profile-border);
+  background: var(--profile-chip-bg);
+  color: var(--profile-chip-text);
   border-radius: 999px;
   padding: 4px 10px;
   font-size: 0.75rem;
@@ -392,19 +416,101 @@ textarea:focus-visible,
 }
 
 .project-item {
-  border-left: 3px solid #b6ded8;
+  border-left: 3px solid var(--profile-border);
   padding-left: 10px;
   margin-bottom: 12px;
 }
 
 .project-item h4 {
   margin: 0 0 6px;
+  color: var(--profile-primary);
 }
 
 .three-col {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+
+.theme-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.36);
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.theme-panel {
+  width: min(460px, 100%);
+  height: 100%;
+  background: #fffdf8;
+  border-left: 1px solid var(--line);
+  padding: 18px;
+  overflow: auto;
+}
+
+.theme-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.theme-panel-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+}
+
+.theme-panel .helper {
+  margin-top: 6px;
+}
+
+.theme-color-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.theme-color-grid input {
+  padding: 3px;
+  height: 40px;
+}
+
+.theme-actions {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.preset-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.preset-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.preset-apply,
+.preset-delete {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 9px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.preset-apply {
+  flex: 1;
+  text-align: left;
+}
+
+.preset-delete {
+  color: #b42318;
 }
 
 @keyframes fadeUp {
@@ -443,14 +549,20 @@ textarea:focus-visible,
     grid-template-columns: 1fr;
   }
 
-  .three-col {
+  .three-col,
+  .theme-color-grid {
     grid-template-columns: 1fr;
+  }
+
+  .theme-panel {
+    width: 100%;
   }
 }
 
 @media print {
   .no-print,
-  .background-orb {
+  .background-orb,
+  .theme-panel-overlay {
     display: none;
   }
 
@@ -465,7 +577,6 @@ textarea:focus-visible,
 
   .profile-card {
     box-shadow: none;
-    border: none;
     border-radius: 0;
     max-width: none;
     padding: 0;
