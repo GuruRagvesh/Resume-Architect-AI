@@ -113,22 +113,30 @@ export async function transformResume(input: string | UploadedAsset[]): Promise<
     });
   }
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-pro",
-    contents: [{ parts }],
-    config: {
-      temperature: 0,
-      responseMimeType: "application/json",
-      responseSchema: profileSchema,
-      systemInstruction:
-        "You are a resume-to-profile conversion engine. Return only valid JSON matching schema. Preserve facts and chronology."
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ parts }],
+      config: {
+        temperature: 0,
+        responseMimeType: "application/json",
+        responseSchema: profileSchema,
+        systemInstruction:
+          "You are a resume-to-profile conversion engine. Return only valid JSON matching schema. Preserve facts and chronology."
+      }
+    });
+
+    const output = response.text;
+    if (!output) {
+      throw new Error("Model returned an empty response.");
     }
-  });
 
-  const output = response.text;
-  if (!output) {
-    throw new Error("Model returned an empty response.");
+    return JSON.parse(output) as ConsultantProfile;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.includes("429") || message.includes("RESOURCE_EXHAUSTED")) {
+      throw new Error("Rate limit reached. Please wait 30-60 seconds and try again with a smaller resume.");
+    }
+    throw err;
   }
-
-  return JSON.parse(output) as ConsultantProfile;
 }
